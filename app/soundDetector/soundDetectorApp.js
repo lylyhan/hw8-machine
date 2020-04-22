@@ -3,22 +3,6 @@ const Tone = require("tone")
 const StartAudioContext = require("startaudiocontext");
 
 
-/*
-function readAudioFromFile(callback){
-    const context = new AudioContext();
-    StartAudioContext(context);
-
-    const htmlAudioElement = document.getElementById("background");
-
-    const source = context.createMediaElementSource(htmlAudioElement);
-
-    source.connect(context.destination);
-
-    if (callback) callback(context,source);
-
-
-}
-*/
 function scramble(array) {
     for(let i=0;i<array.length;i++){
         const randomIndex = Math.floor(Math.random()*array.length);
@@ -28,11 +12,8 @@ function scramble(array) {
     }
 }
 
-function getRandomElement(array){
-    return array[Math.floor(Math.random() * array.length)];
-}
 
-const synth = new Tone.FMSynth().toMaster();
+
 const player = new Tone.Player("./ambience-night.wav").toMaster();
 player.loop = true;
 player.volume.value = -8;
@@ -68,8 +49,8 @@ const soundClassifierOptions = {
 
 
 
-const width = 320;
-const height = 260;
+const width = 800;
+const height = 600;
 
 const p5draw = (p) => {
     
@@ -103,6 +84,10 @@ const p5draw = (p) => {
         p.textSize(16);
         p.textAlign(p.CENTER);
         p.text(label, width / 2, height - 4);
+        p.textSize(16);
+        p.text("Try say 'rain', 'bird','bell','more','less' \n to adjust variety of the soundscape. \n'louder' and 'quiet' to adjust volume ",
+            width/2,
+            height/2);
 
     }
 
