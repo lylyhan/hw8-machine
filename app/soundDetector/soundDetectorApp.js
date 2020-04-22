@@ -3,7 +3,7 @@ const Tone = require("tone")
 const StartAudioContext = require("startaudiocontext");
 
 
-
+/*
 function readAudioFromFile(callback){
     const context = new AudioContext();
     StartAudioContext(context);
@@ -18,9 +18,35 @@ function readAudioFromFile(callback){
 
 
 }
+*/
+function scramble(array) {
+    for(let i=0;i<array.length;i++){
+        const randomIndex = Math.floor(Math.random()*array.length);
+        const tmp = array[randomIndex];
+        array[randomIndex] = array[i];
+        array[i] = tmp;
+    }
+}
+
+function getRandomElement(array){
+    return array[Math.floor(Math.random() * array.length)];
+}
 
 const synth = new Tone.FMSynth().toMaster();
-const player = new Tone.Player(document.getElementById("background")).toMaster();
+const player = new Tone.Player("./ambience-night.wav").toMaster();
+player.loop = true;
+player.volume.value = -8;
+const rain1player = new Tone.Player("./softrain.wav").toMaster();
+rain1player.loop=true;
+rain1player.volume.value=-3;
+const rain2player = new Tone.Player("./loudrain.wav").toMaster();
+rain2player.loop=true;
+const birdplayer = new Tone.Player("./bird.wav").toMaster();
+birdplayer.loop=true;
+const bellplayer = new Tone.Player("./bell.wav").toMaster();
+
+let players = [player,rain1player,rain2player,birdplayer,bellplayer];
+let labels = ["rain","bird","bell"];
 //synth.triggerAttackRelease("C4","8n");
 StartAudioContext(Tone.context);
 // Model URL
@@ -50,13 +76,19 @@ const p5draw = (p) => {
     let classifier;
     let label = "listening...";
     let mySound;
+    //let background = new p5.Element(document.getElementById("background"));
     p.preload = () => {
         
         //p.soundFormats('wav','ogg','mp3');
         //mySound = p.loadSound('public/ambience-night.wav');
     }
 	p.setup = () => {
-        player.start();
+        if (player.loaded) {
+            player.start();
+        } else {
+            player.buffer.onload = () => player.start();
+        }
+
 		p.createCanvas(width, height);
 		p.background(255);
         
@@ -73,7 +105,7 @@ const p5draw = (p) => {
         p.text(label, width / 2, height - 4);
 
     }
-    
+
     p.canvasPressed=()=>{
         mySound.play();
         
@@ -98,9 +130,54 @@ const p5draw = (p) => {
         label = results[0].label;
         console.log(label);
         if(label!="_background_noise_"){
-            synth.triggerAttackRelease("C4","8n");
+            //synth.triggerAttackRelease("C4","8n");
+            if(label=="quiet"){
+                for(let i=0;i<players.length;i++){
+                    players[i].volume.value-=2;
+                    console.log(players[i].volume.value);
+                }
+            }
+            else if(label=="louder"){
+                player.volume.value+=2;
+                console.log(player.volume.value);
+            }
+            else if(label=="rain"){
+                if (rain1player.loaded) {
+                    rain1player.start();
+                } else {
+                    rain1player.buffer.onload = () => rain1player.start();
+                }
+                rain2player.start();
+            }
+            else if(label=="bird"){
+                birdplayer.start();
+            }
+            else if(label=="bell"){
+                bellplayer.start();
+            }
+            else if(label=="more"){
+                scramble(players);
+                for(let i=0;i<labels.length;i++){
+                    if(players[i].state=="stopped"){
+                        players[i].start();
+                        break;
+                    }
+                }
+              
+            }  
+            else if(label=="less"){
+                scramble(players);
+                for(let i=0;i<labels.length;i++){
+                    if(players[i].state=="started"){
+                        players[i].stop();
+                        break;
+                    }
+                }
+              
+            }
 
         }
+
     }
 }
 
